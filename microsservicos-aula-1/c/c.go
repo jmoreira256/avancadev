@@ -57,8 +57,6 @@ func makeHttpCall(urlMicroservice string, provaMS4 string) Result {
 	values := url.Values{}
 	values.Add("provaMS4", provaMS4)
 
-	result := Result{Status: "Chamando a MS4"}
-
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 
@@ -75,7 +73,7 @@ func makeHttpCall(urlMicroservice string, provaMS4 string) Result {
 		log.Fatal("Error processing result")
 	}
 
-	result = Result{}
+	result := Result{}
 
 	json.Unmarshal(data, &result)
 
