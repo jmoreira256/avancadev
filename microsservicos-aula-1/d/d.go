@@ -1,13 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/hashicorp/go-retryablehttp"
-	"html/template"
-	"io/ioutil"
-	"log"
+	"fmt"
 	"net/http"
-	"net/url"
 )
 
 type Result struct {
@@ -16,48 +11,18 @@ type Result struct {
 
 func main() {
 	http.HandleFunc("/", home)
-	http.HandleFunc("/process", process)
 	http.ListenAndServe(":9093", nil)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.ParseFiles("../a/templates/home.html"))
-	t.Execute(w, Result{})
+	provaMS4 := r.PostFormValue("provaMS4")
+	result := returnResultado(provaMS4)
+	fmt.Print(result)
 }
 
-func process(w http.ResponseWriter, r *http.Request) {
-
-	result := makeHttpCall("http://localhost:9092", r.FormValue("provaMS4"))
-
-	t := template.Must(template.ParseFiles("../a/templates/home.html"))
-	t.Execute(w, result)
-}
-
-func makeHttpCall(urlMicroservice string, provaMS4 string) Result {
-
-	values := url.Values{}
-	values.Add("provaMS4", provaMS4)
-
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 5
-
-	res, err := retryClient.PostForm(urlMicroservice, values)
-	if err != nil {
-		result := Result{Status: "Microsservico C fora do ar!"}
-		return result
-	}
-
-	defer res.Body.Close()
-
-	data, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal("Error processing result")
-	}
+func returnResultado(provaMS4 string) Result {
 
 	result := Result{}
 
-	json.Unmarshal(data, &result)
-
 	return result
-
 }
